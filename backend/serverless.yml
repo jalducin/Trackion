@@ -1,0 +1,170 @@
+service: trackion
+
+frameworkVersion: '3'
+
+custom:
+  stage: ${opt:stage, 'develop'}
+  version: '0.1.0'
+  # Orígenes CORS por stage. develop usa '*' (autenticación por Bearer token, sin cookies).
+  corsOrigins:
+    develop:
+      - '*'
+    staging:
+      - https://PENDING_STAGING_DOMAIN
+    production:
+      - https://PENDING_PRODUCTION_DOMAIN
+
+provider:
+  name: aws
+  runtime: python3.12
+  region: us-east-2
+  stage: ${self:custom.stage}
+  timeout: 29
+  memorySize: 512
+  environment:
+    STAGE: ${self:custom.stage}
+    APP_VERSION: ${self:custom.version}
+    # Secretos y conexión vía SSM (con fallback para que 'serverless package' no falle sin SSM).
+    DB_HOST: ${ssm:/trackion/database/host, 'PENDING'}
+    DB_PORT: ${ssm:/trackion/database/port, '5432'}
+    DB_NAME: ${ssm:/trackion/database/name, 'trackion'}
+    DB_USER: ${ssm:/trackion/database/user, 'trackion'}
+    DB_PASSWORD: ${ssm:/trackion/database/password, 'PENDING'}
+    DB_SSL: 'true'
+    JWT_SECRET: ${ssm:/trackion/jwt/secret_key, 'dev-insecure-change-me'}
+    JWT_TTL_SECONDS: '28800'
+    ADMIN_EMAIL: ${ssm:/trackion/admin/email, 'admin@trackion.local'}
+    ADMIN_PASSWORD: ${ssm:/trackion/admin/password, 'changeme'}
+  httpApi:
+    name: trackion-${self:custom.stage}
+    payload: '2.0'
+    cors:
+      allowedOrigins: ${self:custom.corsOrigins.${self:custom.stage}}
+      allowedHeaders:
+        - Content-Type
+        - Authorization
+      allowedMethods:
+        - GET
+        - POST
+        - PUT
+        - DELETE
+        - OPTIONS
+    authorizers:
+      jwtAuthorizer:
+        type: request
+        functionName: authorizer
+        resultTtlInSeconds: 0
+        identitySource: $request.header.Authorization
+        enableSimpleResponses: true
+
+package:
+  patterns:
+    - '!**'
+    - 'handler.py'
+    - 'app/**'
+    - 'vendor/**'
+
+functions:
+  authorizer:
+    handler: handler.authorizer
+    timeout: 10
+
+  api:
+    handler: handler.api
+    timeout: 29
+    events:
+      # ── Públicos (sin authorizer) ──
+      - httpApi:
+          path: '/trackion/health'
+          method: GET
+      - httpApi:
+          path: '/trackion/auth/login'
+          method: POST
+      - httpApi:
+          path: '/trackion/integrations/{name}/webhook'
+          method: POST
+      # ── Protegidos (JWT) ──
+      - httpApi:
+          path: '/trackion/auth/me'
+          method: GET
+          authorizer: jwtAuthorizer
+      - httpApi:
+          path: '/trackion/tickets'
+          method: GET
+          authorizer: jwtAuthorizer
+      - httpApi:
+          path: '/trackion/tickets'
+          method: POST
+          authorizer: jwtAuthorizer
+      - httpApi:
+          path: '/trackion/tickets/{id}'
+          method: GET
+          authorizer: jwtAuthorizer
+      - httpApi:
+          path: '/trackion/tickets/{id}'
+          method: PUT
+          authorizer: jwtAuthorizer
+      - httpApi:
+          path: '/trackion/tickets/{id}/assign'
+          method: POST
+          authorizer: jwtAuthorizer
+      - httpApi:
+          path: '/trackion/tickets/{id}/comments'
+          method: GET
+          authorizer: jwtAuthorizer
+      - httpApi:
+          path: '/trackion/tickets/{id}/comments'
+          method: POST
+          authorizer: jwtAuthorizer
+      - httpApi:
+          path: '/trackion/catalog/categories'
+          method: GET
+          authorizer: jwtAuthorizer
+      - httpApi:
+          path: '/trackion/catalog/categories'
+          method: POST
+          authorizer: jwtAuthorizer
+      - httpApi:
+          path: '/trackion/catalog/categories/{id}'
+          method: PUT
+          authorizer: jwtAuthorizer
+      - httpApi:
+          path: '/trackion/catalog/subcategories'
+          method: GET
+          authorizer: jwtAuthorizer
+      - httpApi:
+          path: '/trackion/catalog/subcategories'
+          method: POST
+          authorizer: jwtAuthorizer
+      - httpApi:
+          path: '/trackion/catalog/subcategories/{id}'
+          method: PUT
+          authorizer: jwtAuthorizer
+      - httpApi:
+          path: '/trackion/catalog/priorities'
+          method: GET
+          authorizer: jwtAuthorizer
+      - httpApi:
+          path: '/trackion/catalog/priorities'
+          method: POST
+          authorizer: jwtAuthorizer
+      - httpApi:
+          path: '/trackion/catalog/priorities/{id}'
+          method: PUT
+          authorizer: jwtAuthorizer
+      - httpApi:
+          path: '/trackion/catalog/users'
+          method: GET
+          authorizer: jwtAuthorizer
+      - httpApi:
+          path: '/trackion/catalog/users'
+          method: POST
+          authorizer: jwtAuthorizer
+      - httpApi:
+          path: '/trackion/catalog/users/{id}'
+          method: PUT
+          authorizer: jwtAuthorizer
+      - httpApi:
+          path: '/trackion/integrations'
+          method: GET
+          authorizer: jwtAuthorizer

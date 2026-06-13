@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Trackion — Mesa de ayuda</title>
+  <link rel="stylesheet" href="css/style.css" />
+</head>
+<body>
+  <div class="app">
+    <aside class="sidebar">
+      <div class="brand">
+        <div class="logo">T</div>
+        <div><h1>Trackion</h1></div>
+      </div>
+      <nav class="nav">
+        <a href="#" class="active">🎫 Tickets</a>
+        <a href="#" id="navNew">➕ Nuevo ticket</a>
+        <a href="#" id="navIntegrations">🔌 Integraciones</a>
+        <a href="#" id="navHealth">📈 Estado</a>
+      </nav>
+    </aside>
+
+    <main class="main">
+      <div class="topbar">
+        <h2 id="title">Tickets</h2>
+        <div class="user-chip">
+          <div class="avatar" id="avatar">A</div>
+          <div>
+            <div id="userName" style="font-size:14px">—</div>
+            <a href="#" id="logout" class="muted">Salir</a>
+          </div>
+        </div>
+      </div>
+
+      <section class="kpis" id="kpis">
+        <div class="kpi metal-surface"><div class="n" id="kAbiertos">0</div><div class="l">Abiertos</div></div>
+        <div class="kpi metal-surface"><div class="n" id="kProgreso">0</div><div class="l">En progreso</div></div>
+        <div class="kpi metal-surface"><div class="n" id="kResueltos">0</div><div class="l">Resueltos</div></div>
+        <div class="kpi metal-surface"><div class="n" id="kTotal">0</div><div class="l">Total</div></div>
+      </section>
+
+      <section class="panel metal-surface">
+        <div class="toolbar">
+          <div class="field"><label>Estado</label>
+            <select id="fStatus">
+              <option value="">Todos</option>
+              <option value="open">Abierto</option>
+              <option value="in_progress">En progreso</option>
+              <option value="resolved">Resuelto</option>
+              <option value="closed">Cerrado</option>
+            </select>
+          </div>
+          <div class="field"><label>Prioridad</label><select id="fPriority"><option value="">Todas</option></select></div>
+          <button class="btn ghost" id="btnFilter">Filtrar</button>
+          <button class="btn accent" id="btnNew" style="margin-left:auto">➕ Nuevo ticket</button>
+        </div>
+        <table>
+          <thead><tr><th>#</th><th>Asunto</th><th>Categoría</th><th>Prioridad</th><th>Estado</th><th>Asignado</th><th>Creado</th></tr></thead>
+          <tbody id="rows"><tr><td colspan="7" class="muted">Cargando…</td></tr></tbody>
+        </table>
+      </section>
+    </main>
+  </div>
+
+  <!-- Modal detalle / nuevo -->
+  <div class="modal-bg" id="modalBg">
+    <div class="modal metal-surface" id="modal"></div>
+  </div>
+
+  <script src="js/config.js"></script>
+  <script src="js/api.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>
