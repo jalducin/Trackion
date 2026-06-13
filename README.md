@@ -1,7 +1,12 @@
 # Trackion — mesa de ayuda serverless con integraciones abiertas
 
-> **Estado:** MVP en construcción (stage `develop`). Helpdesk propio, white-label, sin acoplarse a
+> **Estado:** MVP desplegado (stage `develop`). Helpdesk propio, white-label, sin acoplarse a
 > ningún proveedor externo de tickets. Flujo de desarrollo: **Spec-Driven Development (OpenSpec)**.
+
+> **Demo (develop):**
+> - Frontend: https://dkzxcb6ja48r3.cloudfront.net
+> - API: `https://cfvgpefvtc.execute-api.us-east-2.amazonaws.com/trackion` · health: `/health`
+> - Arquitectura detallada: [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md)
 
 ## 🎯 Qué resuelve
 
@@ -38,7 +43,7 @@ Gestión de tickets de soporte de punta a punta:
         PostgreSQL  ───►  Grafana (monitoreo)
 ```
 
-Detalle por capa en [docs/backend-standards.md](docs/backend-standards.md).
+Detalle por capa en [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) y [docs/backend-standards.md](docs/backend-standards.md).
 
 ## 🛠️ Tecnologías
 
