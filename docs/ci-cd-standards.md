@@ -31,8 +31,9 @@ Archivo: `.github/workflows/deploy.yml`.
 - **En Pull Request** (hacia `main`): instala deps, corre `pytest`, lint y `serverless package --stage develop`
   (valida que empaqueta, sin desplegar). Compuerta de calidad antes de mezclar.
 - **En push a `main`**: repite validación y luego `serverless deploy --stage develop`.
-- Credenciales AWS vía **secrets del repositorio** (`AWS_ACCESS_KEY_ID`, `AWS_SECRET_ACCESS_KEY`) o,
-  preferentemente, **OIDC** (`aws-actions/configure-aws-credentials` con `role-to-assume`). Nunca en el código.
+- Credenciales AWS por **OIDC** (sin llaves de larga vida): el workflow asume el rol IAM
+  `arn:aws:iam::957266312835:role/trackion-github-actions` (confianza acotada a `repo:jalducin/Trackion:ref:refs/heads/main`).
+  Nunca credenciales en el código.
 - Como el repo es **público**: jamás imprimir secretos en logs; los secrets de Actions no se exponen a
   PRs de forks por defecto; mantener `reference/` y `vendor/` fuera del repo (`.gitignore`).
 

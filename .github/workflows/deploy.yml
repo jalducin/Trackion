@@ -3,7 +3,7 @@ name: CI/CD
 # Disciplina del proyecto (docs/ci-cd-standards.md):
 #   - Pull Request → pruebas (compuerta de calidad, sin desplegar).
 #   - Push a main  → pruebas + empaquetado + despliegue a AWS (a partir del 2.º push).
-# Requiere secrets del repo: AWS_ACCESS_KEY_ID, AWS_SECRET_ACCESS_KEY.
+# Autenticación a AWS por OIDC (sin llaves de larga vida): rol trackion-github-actions.
 
 on:
   pull_request:
@@ -14,6 +14,7 @@ on:
 env:
   AWS_REGION: us-east-2
   STAGE: develop
+  AWS_DEPLOY_ROLE_ARN: arn:aws:iam::957266312835:role/trackion-github-actions
 
 jobs:
   test:
@@ -55,11 +56,10 @@ jobs:
       - name: Vendorizar dependencias
         working-directory: backend
         run: python -m pip install -r requirements.txt -t vendor
-      - name: Configurar credenciales AWS
+      - name: Configurar credenciales AWS (OIDC)
         uses: aws-actions/configure-aws-credentials@v4
         with:
-          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          role-to-assume: ${{ env.AWS_DEPLOY_ROLE_ARN }}
           aws-region: ${{ env.AWS_REGION }}
       - name: Validar empaquetado
         working-directory: backend
