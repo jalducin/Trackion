@@ -66,7 +66,21 @@ Detalle por capa en [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) y [docs/backend
 - `serverless` v3 (`npm i -g serverless`).
 - Una instancia PostgreSQL alcanzable desde el Lambda (ver `docs/backend-standards.md`).
 
-## 🚀 Configuración (quickstart)
+## 🐳 Local con Docker (sin AWS, costo $0)
+
+Levanta todo el stack —PostgreSQL + API + frontend— en tu máquina:
+
+```bash
+cp .env.example .env        # ajusta credenciales locales si quieres
+docker compose up --build   # construye y levanta db + api + web
+```
+
+- Frontend: http://localhost:8081  · API: http://localhost:8080/trackion  · health: `/health`
+- Admin por defecto: `admin@trackion.local` / `admin123` (configurable en `.env`)
+- El backend corre los **mismos handlers** que en AWS vía un adaptador HTTP local (`backend/local_server.py`).
+- Apagar: `docker compose down` (datos persisten en el volumen `pgdata`; `down -v` los borra).
+
+## 🚀 Configuración (quickstart en AWS)
 
 ```bash
 # 1) Backend: vendorizar deps puras-python

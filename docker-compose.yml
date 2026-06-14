@@ -1,0 +1,53 @@
+# Trackion en local con Docker (sin AWS). Levanta PostgreSQL + API + frontend.
+#   docker compose up --build      → http://localhost:8081 (frontend), API en :8080
+# Variables en .env (ver .env.example). Solo para desarrollo.
+
+services:
+  db:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: ${DB_USER:-trackion}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-trackion}
+      POSTGRES_DB: ${DB_NAME:-trackion}
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USER:-trackion} -d ${DB_NAME:-trackion}"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  api:
+    build: ./backend
+    environment:
+      STAGE: local
+      APP_VERSION: 0.1.0-local
+      DB_HOST: db
+      DB_PORT: "5432"
+      DB_NAME: ${DB_NAME:-trackion}
+      DB_USER: ${DB_USER:-trackion}
+      DB_PASSWORD: ${DB_PASSWORD:-trackion}
+      DB_SSL: "false"
+      JWT_SECRET: ${JWT_SECRET:-local-dev-secret-change-me}
+      JWT_TTL_SECONDS: "28800"
+      ADMIN_EMAIL: ${ADMIN_EMAIL:-admin@trackion.local}
+      ADMIN_PASSWORD: ${ADMIN_PASSWORD:-admin123}
+    ports:
+      - "8080:8080"
+    depends_on:
+      db:
+        condition: service_healthy
+
+  web:
+    image: nginx:alpine
+    volumes:
+      - ./frontend:/usr/share/nginx/html:ro
+    ports:
+      - "8081:80"
+    depends_on:
+      - api
+
+volumes:
+  pgdata:
