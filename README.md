@@ -1,12 +1,11 @@
 # Trackion — mesa de ayuda serverless con integraciones abiertas
 
-> **Estado:** MVP desplegado (stage `develop`). Helpdesk propio, white-label, sin acoplarse a
-> ningún proveedor externo de tickets. Flujo de desarrollo: **Spec-Driven Development (OpenSpec)**.
+> **Estado:** MVP funcional, **local-first con Docker** (sin costos de nube). La IaC para AWS sigue
+> intacta y el deploy a la nube es opcional/manual. Flujo de desarrollo: **Spec-Driven Development (OpenSpec)**.
 
-> **Demo (develop):**
-> - Frontend: https://dkzxcb6ja48r3.cloudfront.net
-> - API: `https://cfvgpefvtc.execute-api.us-east-2.amazonaws.com/trackion` · health: `/health`
-> - Arquitectura detallada: [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md)
+> **Arrancar en 1 comando:** `docker compose up --build` → frontend en http://localhost:8081,
+> API en http://localhost:8080/trackion. Detalle en [🐳 Local con Docker](#-local-con-docker-sin-aws-costo-0)
+> y arquitectura en [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md).
 
 ## 🎯 Qué resuelve
 
