@@ -118,6 +118,20 @@ trackion/
 `/trackion/catalog/{categories|subcategories|priorities|users}` ·
 `/trackion/integrations` · `/trackion/integrations/{name}/webhook`.
 
+## 📈 Monitoreo (Grafana)
+
+El monitoreo vive en el proyecto **Monitoreo-Cloud** (Grafana self-hosted), que lee directamente el
+PostgreSQL de Trackion:
+
+- **Dashboard** "Trackion — Tickets & SLA" (uid `trackion-tickets`): totales, SLA vencido / por vencer,
+  tickets por estado y prioridad, estado de SLA (donut), creados por día y tabla de vencidos.
+- **Alerta** "Trackion - SLA vencido" (dispara si hay tickets con SLA vencido > 0 por 5 min).
+- **SLA por prioridad:** urgente 4 h · alto 6 h · medio 24 h · bajo 48 h (ver capability `sla`).
+- **Datasource** `trackionpg` → contenedor `trackion-db-1`. Como Grafana corre en otro stack/red Docker,
+  conectarlo a la red de Trackion: `docker network connect trackion_default grafana`.
+
+> El dashboard, el datasource y la alerta están versionados en `Monitoreo-Cloud/grafana/provisioning/`.
+
 ## 🔄 Cómo contribuir (SDD)
 
 **Spec-first**: nada de código antes de su spec. Por cada cambio:
