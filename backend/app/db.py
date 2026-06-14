@@ -117,6 +117,8 @@ SCHEMA_STATEMENTS = [
         is_active BOOLEAN NOT NULL DEFAULT TRUE
     )
     """,
+    # SLA por prioridad (horas objetivo de resolución). Aditiva e idempotente.
+    "ALTER TABLE priorities ADD COLUMN IF NOT EXISTS sla_hours INTEGER NOT NULL DEFAULT 24",
     """
     CREATE TABLE IF NOT EXISTS tickets (
         id             SERIAL PRIMARY KEY,
@@ -180,12 +182,14 @@ def ensure_schema():
 def _seed(conn: Connection):
     from . import auth  # import diferido para evitar ciclo
 
-    # Prioridades base
-    for name, level in [("baja", 1), ("media", 2), ("alta", 3), ("urgente", 4)]:
+    # Prioridades base con SLA (horas): bajo=48, medio=24, alto=6, urgente=4.
+    for name, level, sla in [("baja", 1, 48), ("media", 2, 24), ("alta", 3, 6), ("urgente", 4, 4)]:
         conn.run(
-            "INSERT INTO priorities (name, level) VALUES (:n, :l) ON CONFLICT (name) DO NOTHING",
-            n=name, l=level,
+            "INSERT INTO priorities (name, level, sla_hours) VALUES (:n, :l, :s) ON CONFLICT (name) DO NOTHING",
+            n=name, l=level, s=sla,
         )
+        # Asegura el SLA correcto también en instalaciones previas (idempotente).
+        conn.run("UPDATE priorities SET sla_hours = :s WHERE name = :n", n=name, s=sla)
     # Categoría general
     conn.run(
         "INSERT INTO categories (name) VALUES ('General') ON CONFLICT (name) DO NOTHING"

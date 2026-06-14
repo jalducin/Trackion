@@ -74,17 +74,19 @@ def update_subcategory(event):
 
 def list_priorities(event):
     return build_response(200, {"items": db.query(
-        "SELECT id, name, level, is_active FROM priorities WHERE is_active ORDER BY level")})
+        "SELECT id, name, level, sla_hours, is_active FROM priorities WHERE is_active ORDER BY level")})
 
 
 def create_priority(event):
     data = parse_body(event)
     name = require_field(data, "name")
     level = int(data.get("level", 0))
+    sla_hours = int(data.get("sla_hours", 24))
     if db.query_one("SELECT 1 AS ok FROM priorities WHERE lower(name) = lower(:n)", n=name):
         raise ApiError(409, "duplicate", "La prioridad ya existe")
-    row = db.execute("INSERT INTO priorities (name, level) VALUES (:n, :l) RETURNING id, name, level, is_active",
-                     n=name, l=level)
+    row = db.execute(
+        "INSERT INTO priorities (name, level, sla_hours) VALUES (:n, :l, :s) RETURNING id, name, level, sla_hours, is_active",
+        n=name, l=level, s=sla_hours)
     return build_response(201, row[0])
 
 
@@ -96,11 +98,13 @@ def update_priority(event):
         sets.append("name = :name"); params["name"] = data["name"]
     if "level" in data:
         sets.append("level = :level"); params["level"] = int(data["level"])
+    if "sla_hours" in data:
+        sets.append("sla_hours = :sla_hours"); params["sla_hours"] = int(data["sla_hours"])
     if "is_active" in data:
         sets.append("is_active = :is_active"); params["is_active"] = bool(data["is_active"])
     if not sets:
         raise ApiError(400, "no_changes", "No hay campos para actualizar")
-    row = db.execute(f"UPDATE priorities SET {', '.join(sets)} WHERE id = :id RETURNING id, name, level, is_active", **params)
+    row = db.execute(f"UPDATE priorities SET {', '.join(sets)} WHERE id = :id RETURNING id, name, level, sla_hours, is_active", **params)
     if not row:
         raise ApiError(404, "not_found", "Prioridad no encontrada")
     return build_response(200, row[0])

@@ -16,9 +16,20 @@ _TICKET_SELECT = """
            t.category_id, c.name AS category,
            t.subcategory_id, sc.name AS subcategory,
            t.priority_id, p.name AS priority, p.level AS priority_level,
+           p.sla_hours,
            t.requester_id, ru.name AS requester,
            t.assignee_id, au.name AS assignee,
-           t.created_at, t.updated_at, t.resolved_at
+           t.created_at, t.updated_at, t.resolved_at,
+           (t.created_at + make_interval(hours => p.sla_hours)) AS sla_due_at,
+           CASE
+             WHEN t.status IN ('resolved', 'closed') THEN
+               CASE WHEN t.resolved_at IS NOT NULL
+                         AND t.resolved_at <= t.created_at + make_interval(hours => p.sla_hours)
+                    THEN 'met' ELSE 'breached' END
+             WHEN now() > t.created_at + make_interval(hours => p.sla_hours) THEN 'breached'
+             WHEN now() > t.created_at + make_interval(mins => (p.sla_hours * 48)) THEN 'due_soon'
+             ELSE 'on_track'
+           END AS sla_status
     FROM tickets t
     JOIN categories c ON c.id = t.category_id
     JOIN priorities p ON p.id = t.priority_id
