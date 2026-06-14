@@ -2,6 +2,10 @@
 
 > Específicos de Trackion. Definen cómo se valida, publica y despliega el proyecto.
 
+> **Estado actual (local-first):** el proyecto opera **local con Docker** (sin costos AWS). El despliegue
+> a AWS está en modo **manual** (`workflow_dispatch`); el auto-deploy en push se reactiva recreando la
+> infra (RDS/SSM) y el rol OIDC. El resto de esta guía describe el flujo cloud cuando esté activo.
+
 ## 1. Regla spec-first (obligatoria)
 
 **Ningún código se escribe antes que su especificación.** Es el principio central de OpenSpec

@@ -1,8 +1,10 @@
 name: CI/CD
 
 # Disciplina del proyecto (docs/ci-cd-standards.md):
-#   - Pull Request → pruebas (compuerta de calidad, sin desplegar).
-#   - Push a main  → pruebas + empaquetado + despliegue a AWS (a partir del 2.º push).
+#   - Pull Request / Push a main → pruebas (compuerta de calidad).
+#   - Deploy a AWS: MANUAL (workflow_dispatch). Desactivado el auto-deploy porque el proyecto
+#     opera local con Docker (sin costos AWS). Para reactivarlo: recrear infra/SSM/rol OIDC y
+#     volver a poner el deploy en push a main.
 # Autenticación a AWS por OIDC (sin llaves de larga vida): rol trackion-github-actions.
 
 on:
@@ -10,6 +12,7 @@ on:
     branches: [main]
   push:
     branches: [main]
+  workflow_dispatch:
 
 env:
   AWS_REGION: us-east-2
@@ -38,7 +41,7 @@ jobs:
   deploy:
     name: Empaquetar y desplegar a AWS
     needs: test
-    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    if: github.event_name == 'workflow_dispatch'
     runs-on: ubuntu-latest
     permissions:
       id-token: write
